@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import Product from "./components/Product";
+import ProductListPage from "./pages/ProductListPage";
 import { QueryProvider } from "./providers/QuerryProvider";
 import { setTokenProvider } from "./lib/api/client";
 
@@ -17,7 +17,7 @@ export default function App() {
   return (
     <QueryProvider>
       <BridgeTokenProvider />
-      <Product />
+      <ProductListPage />
     </QueryProvider>
   );
 }
