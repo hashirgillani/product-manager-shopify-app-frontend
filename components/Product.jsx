@@ -1,93 +1,134 @@
-const products = [
-  {
-    id: 1,
-    title: "Vintage Denim Jacket",
-    vendor: "Urban Threads",
-    price: 89.0,
-    status: "Active",
-    inventory: 42,
-    color: "bg-indigo-100",
-    initial: "V",
-  },
-  {
-    id: 2,
-    title: "Organic Cotton Tee",
-    vendor: "Pure Basics",
-    price: 24.0,
-    status: "Active",
-    inventory: 128,
-    color: "bg-emerald-100",
-    initial: "O",
-  },
-  {
-    id: 3,
-    title: "Leather Crossbody Bag",
-    vendor: "Urban Threads",
-    price: 129.0,
-    status: "Draft",
-    inventory: 8,
-    color: "bg-amber-100",
-    initial: "L",
-  },
-  {
-    id: 4,
-    title: "Minimalist Watch",
-    vendor: "Nordic Goods",
-    price: 199.0,
-    status: "Active",
-    inventory: 15,
-    color: "bg-sky-100",
-    initial: "M",
-  },
-  {
-    id: 5,
-    title: "Wool Blend Scarf",
-    vendor: "Nordic Goods",
-    price: 45.0,
-    status: "Archived",
-    inventory: 0,
-    color: "bg-rose-100",
-    initial: "W",
-  },
-  {
-    id: 6,
-    title: "Ceramic Coffee Mug",
-    vendor: "Pure Basics",
-    price: 18.0,
-    status: "Active",
-    inventory: 256,
-    color: "bg-violet-100",
-    initial: "C",
-  },
-  {
-    id: 7,
-    title: "Canvas Tote Bag",
-    vendor: "Urban Threads",
-    price: 32.0,
-    status: "Draft",
-    inventory: 64,
-    color: "bg-teal-100",
-    initial: "C",
-  },
-  {
-    id: 8,
-    title: "Stainless Water Bottle",
-    vendor: "Pure Basics",
-    price: 28.0,
-    status: "Active",
-    inventory: 92,
-    color: "bg-orange-100",
-    initial: "S",
-  },
-];
+import { useEffect, useState } from "react";
+import { useProducts } from "../hooks/useProducts";
 
-const statusStyles = {
-  Active: "bg-emerald-50 text-emerald-700 ring-emerald-600/20",
-  Draft: "bg-amber-50 text-amber-700 ring-amber-600/20",
-  Archived: "bg-slate-100 text-slate-500 ring-slate-500/20",
+const TABS = ["All", "Active", "Draft", "Archived"];
+
+const STATUS_MAP = {
+  All: undefined,
+  Active: "ACTIVE",
+  Draft: "DRAFT",
+  Archived: "ARCHIVED",
 };
 
+const LIMIT = 10;
+
+const statusStyles = {
+  ACTIVE: "bg-emerald-50 text-emerald-700 ring-emerald-600/20",
+  DRAFT: "bg-amber-50 text-amber-700 ring-amber-600/20",
+  ARCHIVED: "bg-slate-100 text-slate-500 ring-slate-500/20",
+};
+
+const statusLabels = {
+  ACTIVE: "Active",
+  DRAFT: "Draft",
+  ARCHIVED: "Archived",
+};
+
+const placeholders = [
+  { color: "bg-indigo-100" },
+  { color: "bg-emerald-100" },
+  { color: "bg-amber-100" },
+  { color: "bg-sky-100" },
+  { color: "bg-rose-100" },
+  { color: "bg-violet-100" },
+  { color: "bg-teal-100" },
+  { color: "bg-orange-100" },
+];
+
+const ProductCard = ({ product }) => {
+  const price = Number(product.variants?.[0]?.price);
+  const priceLabel = Number.isFinite(price) ? `$${price.toFixed(2)}` : "—";
+  const inventory = product.variants?.[0]?.inventoryQuantity ?? 0;
+  const status = product.status ?? "ACTIVE";
+
+  const grade = [...(product.title ?? "")].reduce(
+    (sum, ch) => sum + ch.charCodeAt(0),
+    0
+  );
+  const { color } = placeholders[grade % placeholders.length];
+  const initial = (product.title || "P").charAt(0).toUpperCase();
+
+  return (
+    <article className="group flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition hover:shadow-md">
+      <div className="flex h-36 items-center justify-center overflow-hidden">
+        {product.featuredImage?.url ? (
+          <img
+            src={product.featuredImage.url}
+            alt={product.title}
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          <div className={`flex h-full w-full items-center justify-center ${color}`}>
+            <span className="text-4xl font-bold text-slate-700">{initial}</span>
+          </div>
+        )}
+      </div>
+      <div className="flex flex-1 flex-col gap-2 p-4">
+        <div className="flex items-start justify-between gap-2">
+          <h2 className="line-clamp-1 font-medium text-slate-900">
+            {product.title}
+          </h2>
+          <span
+            className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset ${statusStyles[status]}`}
+          >
+            {statusLabels[status]}
+          </span>
+        </div>
+        <p className="text-sm text-slate-500">{product.vendor}</p>
+        <div className="mt-auto flex items-end justify-between pt-2">
+          <span className="text-base font-semibold text-slate-900">
+            {priceLabel}
+          </span>
+          <span className="text-xs text-slate-400">
+            {inventory} in stock
+          </span>
+        </div>
+      </div>
+    </article>
+  );
+};
+
+const ProductCardSkeleton = () => (
+  <div className="animate-pulse overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+    <div className="h-36 bg-slate-100" />
+    <div className="flex flex-1 flex-col gap-2 p-4">
+      <div className="h-4 w-3/4 rounded bg-slate-100" />
+      <div className="h-3 w-1/2 rounded bg-slate-100" />
+      <div className="mt-auto flex items-center justify-between pt-2">
+        <div className="h-4 w-1/4 rounded bg-slate-100" />
+        <div className="h-3 w-1/4 rounded bg-slate-100" />
+      </div>
+    </div>
+  </div>
+);
+
 export default function Product() {
+  const [activeTab, setActiveTab] = useState("All");
+  const [cursor, setCursor] = useState(null);
+  const [products, setProducts] = useState([]);
+
+  const status = STATUS_MAP[activeTab];
+  const query = useProducts({ status, cursor, limit: LIMIT });
+
+  useEffect(() => {
+    if (!query.data) return;
+    setProducts((prev) =>
+      cursor === null ? query.data.products : [...prev, ...query.data.products]
+    );
+  }, [query.data, cursor]);
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    setCursor(null);
+    setProducts([]);
+  };
+
+  const loadMore = () => {
+    if (query.data?.pageInfo?.hasNextPage) {
+      setCursor(query.data.pageInfo.endCursor);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-50">
       <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/80 backdrop-blur">
@@ -97,7 +138,7 @@ export default function Product() {
               Products
             </h1>
             <p className="hidden text-sm text-slate-500 sm:block">
-              8 products
+              {query.isLoading ? "Loading products..." : `${products.length} products`}
             </p>
           </div>
           <button className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2">
@@ -143,11 +184,12 @@ export default function Product() {
           </div>
 
           <div className="flex gap-1 rounded-lg bg-slate-200/70 p-1">
-            {["All", "Active", "Draft", "Archived"].map((tab) => (
+            {TABS.map((tab) => (
               <button
                 key={tab}
+                onClick={() => handleTabChange(tab)}
                 className={`rounded-md px-3 py-1.5 text-sm font-medium transition ${
-                  tab === "All"
+                  activeTab === tab
                     ? "bg-white text-slate-900 shadow-sm"
                     : "text-slate-600 hover:text-slate-900"
                 }`}
@@ -158,43 +200,51 @@ export default function Product() {
           </div>
         </div>
 
-        <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {products.map((product) => (
-            <article
-              key={product.id}
-              className="group flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition hover:shadow-md"
+        {query.isError && products.length === 0 ? (
+          <div className="mt-6 flex flex-col items-center gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-12 text-center">
+            <p className="text-sm font-medium text-red-700">
+              Failed to load products.
+            </p>
+            <button
+              onClick={() => query.refetch()}
+              className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-500"
             >
-              <div
-                className={`flex h-36 items-center justify-center ${product.color}`}
-              >
-                <span className="text-4xl font-bold text-slate-700">
-                  {product.initial}
-                </span>
+              Retry
+            </button>
+          </div>
+        ) : query.isLoading ? (
+          <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {Array.from({ length: 8 }).map((_, index) => (
+              <ProductCardSkeleton key={index} />
+            ))}
+          </div>
+        ) : products.length === 0 ? (
+          <div className="mt-6 flex flex-col items-center gap-2 rounded-xl border border-dashed border-slate-300 bg-white px-4 py-12 text-center">
+            <p className="text-sm font-medium text-slate-700">No products found</p>
+            <p className="text-sm text-slate-500">
+              Create a product or switch to another status tab.
+            </p>
+          </div>
+        ) : (
+          <>
+            <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {products.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+            {query.data?.pageInfo?.hasNextPage && (
+              <div className="mt-8 flex justify-center">
+                <button
+                  onClick={loadMore}
+                  disabled={query.isFetching}
+                  className="inline-flex items-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:opacity-60"
+                >
+                  {query.isFetching ? "Loading..." : "Load more"}
+                </button>
               </div>
-              <div className="flex flex-1 flex-col gap-2 p-4">
-                <div className="flex items-start justify-between gap-2">
-                  <h2 className="line-clamp-1 font-medium text-slate-900">
-                    {product.title}
-                  </h2>
-                  <span
-                    className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset ${statusStyles[product.status]}`}
-                  >
-                    {product.status}
-                  </span>
-                </div>
-                <p className="text-sm text-slate-500">{product.vendor}</p>
-                <div className="mt-auto flex items-end justify-between pt-2">
-                  <span className="text-base font-semibold text-slate-900">
-                    ${product.price.toFixed(2)}
-                  </span>
-                  <span className="text-xs text-slate-400">
-                    {product.inventory} in stock
-                  </span>
-                </div>
-              </div>
-            </article>
-          ))}
-        </div>
+            )}
+          </>
+        )}
       </main>
     </div>
   );
