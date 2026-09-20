@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import ProductCard, {
   ProductCardSkeleton,
 } from "../components/ProductCard";
+import { useDebouncedValue } from "../hooks/useDebouncedValue";
 import { useProducts } from "../hooks/useProducts";
 import { toNumericShopifyId } from "../lib/shared/utils/index.js";
 
@@ -22,9 +23,22 @@ export default function ProductListPage() {
   const [activeTab, setActiveTab] = useState("All");
   const [cursor, setCursor] = useState(null);
   const [products, setProducts] = useState([]);
+  const [search, setSearch] = useState("");
+
+  const debouncedSearch = useDebouncedValue(search, 400);
 
   const status = STATUS_MAP[activeTab];
-  const query = useProducts({ status, cursor, limit: LIMIT });
+  const query = useProducts({
+    status,
+    cursor,
+    search: debouncedSearch.trim() || undefined,
+    limit: LIMIT,
+  });
+
+  useEffect(() => {
+    setCursor(null);
+    setProducts([]);
+  }, [debouncedSearch]);
 
   useEffect(() => {
     if (!query.data) return;
@@ -80,9 +94,14 @@ export default function ProductListPage() {
             </svg>
             <input
               type="text"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
               placeholder="Search products..."
-              className="w-full rounded-lg border border-slate-200 bg-white py-2 pl-9 pr-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+              className="w-full rounded-lg border border-slate-200 bg-white py-2 pl-9 pr-9 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
             />
+            {query.isFetching && (
+              <span className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin rounded-full border-2 border-slate-300 border-t-slate-500" />
+            )}
           </div>
 
           <div className="flex gap-1 rounded-lg bg-slate-200/70 p-1">
