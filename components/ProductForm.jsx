@@ -161,7 +161,7 @@ export default function ProductForm({ product }) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-      <div className="sticky top-0 z-20 -mx-4 border-b border-slate-200 bg-white/90 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6">
+      <div className="sticky top-[7.875rem] z-20 -mx-4 border-b border-slate-200 bg-white/90 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="min-w-0 truncate text-base font-semibold text-slate-900">
             {watchedTitle || "Untitled product"}
@@ -304,7 +304,10 @@ export default function ProductForm({ product }) {
           <div className="flex gap-2">
             <dt className="font-medium text-slate-500">Inventory</dt>
             <dd className="text-slate-900">
-              {variant?.inventoryQuantity ?? 0} in stock
+              {variant?.inventoryQuantity === null ||
+              variant?.inventoryQuantity === undefined
+                ? "Not tracked"
+                : `${variant.inventoryQuantity} in stock`}
             </dd>
           </div>
         </dl>

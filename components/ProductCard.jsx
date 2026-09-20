@@ -10,28 +10,9 @@ const statusLabels = {
   ARCHIVED: "Archived",
 };
 
-const placeholders = [
-  { color: "bg-indigo-100" },
-  { color: "bg-emerald-100" },
-  { color: "bg-amber-100" },
-  { color: "bg-sky-100" },
-  { color: "bg-rose-100" },
-  { color: "bg-violet-100" },
-  { color: "bg-teal-100" },
-  { color: "bg-orange-100" },
-];
-
 export default function ProductCard({ product, onClick }) {
-  const price = Number(product.variants?.[0]?.price);
-  const priceLabel = Number.isFinite(price) ? `$${price.toFixed(2)}` : "—";
-  const inventory = product.variants?.[0]?.inventoryQuantity ?? 0;
   const status = product.status ?? "ACTIVE";
-
-  const grade = [...(product.title ?? "")].reduce(
-    (sum, ch) => sum + ch.charCodeAt(0),
-    0
-  );
-  const { color } = placeholders[grade % placeholders.length];
+  const image = product.featuredImage?.url ?? product.media?.[0]?.url ?? null;
   const initial = (product.title || "P").charAt(0).toUpperCase();
 
   return (
@@ -41,18 +22,17 @@ export default function ProductCard({ product, onClick }) {
       onClick={onClick}
       className="group flex cursor-pointer flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition hover:shadow-md focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2"
     >
-      <div className="flex h-36 items-center justify-center overflow-hidden">
-        {product.featuredImage?.url ? (
+      <div className="aspect-[4/3] w-full overflow-hidden bg-slate-100">
+        {image ? (
           <img
-            src={product.featuredImage.url}
+            src={image}
             alt={product.title}
-            className="h-full w-full object-cover"
+            loading="lazy"
+            className="h-full w-full object-cover object-center"
           />
         ) : (
-          <div
-            className={`flex h-full w-full items-center justify-center ${color}`}
-          >
-            <span className="text-4xl font-bold text-slate-700">{initial}</span>
+          <div className="flex h-full w-full items-center justify-center bg-slate-100">
+            <span className="text-4xl font-bold text-slate-400">{initial}</span>
           </div>
         )}
       </div>
@@ -68,12 +48,6 @@ export default function ProductCard({ product, onClick }) {
           </span>
         </div>
         <p className="text-sm text-slate-500">{product.vendor}</p>
-        <div className="mt-auto flex items-end justify-between pt-2">
-          <span className="text-base font-semibold text-slate-900">
-            {priceLabel}
-          </span>
-          <span className="text-xs text-slate-400">{inventory} in stock</span>
-        </div>
       </div>
     </article>
   );
@@ -82,14 +56,10 @@ export default function ProductCard({ product, onClick }) {
 export function ProductCardSkeleton() {
   return (
     <div className="animate-pulse overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-      <div className="h-36 bg-slate-100" />
-      <div className="flex flex-1 flex-col gap-2 p-4">
+      <div className="aspect-[4/3] bg-slate-100" />
+      <div className="flex flex-col gap-2 p-4">
         <div className="h-4 w-3/4 rounded bg-slate-100" />
         <div className="h-3 w-1/2 rounded bg-slate-100" />
-        <div className="mt-auto flex items-center justify-between pt-2">
-          <div className="h-4 w-1/4 rounded bg-slate-100" />
-          <div className="h-3 w-1/4 rounded bg-slate-100" />
-        </div>
       </div>
     </div>
   );
