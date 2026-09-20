@@ -6,6 +6,7 @@ import { ProductResponseSchema } from "../lib/shared/schemas/index.js";
 export const useProducts = ({ status, cursor, limit = 10 } = {}) => {
   return useQuery({
     queryKey: ["products", status, limit, cursor],
+    refetchOnMount: true,
     queryFn: async () => {
       const { data } = await apiClient.get(ENDPOINTS.products.list, {
         params: { status, limit, cursor },

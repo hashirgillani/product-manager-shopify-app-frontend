@@ -19,6 +19,7 @@ export const useUpdateProduct = (id) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["product", endpointId] });
       queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["productLogs"] });
     },
   });
 };
