@@ -6,7 +6,14 @@ export default function LogEntryCard({ log }) {
   return (
     <article className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
       <div className="flex flex-col gap-1 border-b border-slate-100 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-        <h3 className="font-medium text-slate-900">{log.productTitle}</h3>
+        <div className="flex flex-wrap items-center gap-2">
+          <h3 className="font-medium text-slate-900">{log.productTitle}</h3>
+          {log.source === "shopify" && (
+            <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-indigo-600">
+              Shopify Admin
+            </span>
+          )}
+        </div>
         <time className="shrink-0 text-xs text-slate-500 sm:text-sm">
           {formatDateTime(log.createdAt)}
         </time>
@@ -22,27 +29,33 @@ export default function LogEntryCard({ log }) {
               <span className="w-32 shrink-0 text-sm font-medium text-slate-500">
                 {change.label}
               </span>
-              <span className="flex flex-1 flex-wrap items-center gap-2 text-sm">
-                <span className="min-w-0 rounded-lg bg-slate-100 px-2 py-1 text-slate-600 line-through decoration-slate-400">
-                  {String(change.before ?? "—")}
+              {change.before === null && change.after === null ? (
+                <p className="text-sm italic text-slate-400">
+                  No previous data available — recorded from Shopify Admin.
+                </p>
+              ) : (
+                <span className="flex flex-1 flex-wrap items-center gap-2 text-sm">
+                  <span className="min-w-0 rounded-lg bg-slate-100 px-2 py-1 text-slate-600 line-through decoration-slate-400">
+                    {String(change.before ?? "—")}
+                  </span>
+                  <svg
+                    className="h-4 w-4 shrink-0 text-slate-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={1.5}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M13.5 4.5L21 12l-7.5 7.5M21 12H3"
+                    />
+                  </svg>
+                  <span className="min-w-0 rounded-lg bg-emerald-50 px-2 py-1 font-medium text-emerald-700">
+                    {String(change.after ?? "—")}
+                  </span>
                 </span>
-                <svg
-                  className="h-4 w-4 shrink-0 text-slate-400"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={1.5}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M13.5 4.5L21 12l-7.5 7.5M21 12H3"
-                  />
-                </svg>
-                <span className="min-w-0 rounded-lg bg-emerald-50 px-2 py-1 font-medium text-emerald-700">
-                  {String(change.after ?? "—")}
-                </span>
-              </span>
+              )}
             </li>
           ))}
         </ul>
