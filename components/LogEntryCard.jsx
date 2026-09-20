@@ -8,9 +8,13 @@ export default function LogEntryCard({ log }) {
       <div className="flex flex-col gap-1 border-b border-slate-100 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
         <div className="flex flex-wrap items-center gap-2">
           <h3 className="font-medium text-slate-900">{log.productTitle}</h3>
-          {log.source === "shopify" && (
+          {log.source === "shopify" ? (
             <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-indigo-600">
               Shopify Admin
+            </span>
+          ) : (
+            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-600">
+              Within App
             </span>
           )}
         </div>
