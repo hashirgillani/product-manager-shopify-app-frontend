@@ -21,7 +21,7 @@ const placeholders = [
   { color: "bg-orange-100" },
 ];
 
-export default function ProductCard({ product }) {
+export default function ProductCard({ product, onClick }) {
   const price = Number(product.variants?.[0]?.price);
   const priceLabel = Number.isFinite(price) ? `$${price.toFixed(2)}` : "—";
   const inventory = product.variants?.[0]?.inventoryQuantity ?? 0;
@@ -35,7 +35,12 @@ export default function ProductCard({ product }) {
   const initial = (product.title || "P").charAt(0).toUpperCase();
 
   return (
-    <article className="group flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition hover:shadow-md">
+    <article
+      role="button"
+      tabIndex={0}
+      onClick={onClick}
+      className="group flex cursor-pointer flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition hover:shadow-md focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2"
+    >
       <div className="flex h-36 items-center justify-center overflow-hidden">
         {product.featuredImage?.url ? (
           <img

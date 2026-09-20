@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import ProductCard, {
   ProductCardSkeleton,
 } from "../components/ProductCard";
 import { useProducts } from "../hooks/useProducts";
+import { toNumericShopifyId } from "../lib/shared/utils/index.js";
 
 const TABS = ["All", "Active", "Draft", "Archived"];
 
@@ -16,6 +18,7 @@ const STATUS_MAP = {
 const LIMIT = 10;
 
 export default function ProductListPage() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("All");
   const [cursor, setCursor] = useState(null);
   const [products, setProducts] = useState([]);
@@ -146,7 +149,13 @@ export default function ProductListPage() {
           <>
             <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {products.map((product) => (
-                <ProductCard key={product.id} product={product} />
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  onClick={() =>
+                    navigate(`/products/${toNumericShopifyId(product.id)}`)
+                  }
+                />
               ))}
             </div>
             {query.data?.pageInfo?.hasNextPage && (
