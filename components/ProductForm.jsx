@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { PRODUCT_STATUS_VALUES } from "../lib/shared/enums/index.js";
 import { ProductBaseSchema } from "../lib/shared/schemas/index.js";
+import { useUpdateProduct } from "../hooks/useUpdateProduct";
 
 const inputClass = (hasError) =>
   `w-full rounded-lg border bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 ${
@@ -22,10 +24,14 @@ const statusLabel = (value) =>
   value.charAt(0) + value.slice(1).toLowerCase();
 
 export default function ProductForm({ product }) {
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(product.featuredImage?.url ?? null);
+  const mutation = useUpdateProduct(product.id);
+
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(ProductBaseSchema),
     mode: "onTouched",
@@ -41,24 +47,68 @@ export default function ProductForm({ product }) {
 
   const variant = product.variants?.[0];
 
-  const onSubmit = (values) => {
-    console.info("Product update not implemented yet", values);
+  const handleImageChange = (event) => {
+    const file = event.target.files?.[0] ?? null;
+    setImageFile(file);
+    if (file) {
+      setImagePreview(URL.createObjectURL(file));
+    } else {
+      setImagePreview(product.featuredImage?.url ?? null);
+    }
   };
+
+  const onSubmit = async (values) => {
+    const formData = new FormData();
+    formData.append("title", values.title);
+    formData.append("vendor", values.vendor ?? "");
+    formData.append("productType", values.productType ?? "");
+    formData.append("tags", values.tags ?? "");
+    formData.append("body_html", values.body_html ?? "");
+    formData.append("status", values.status);
+    if (imageFile) {
+      formData.append("featuredImage", imageFile);
+    }
+    await mutation.mutateAsync(formData);
+  };
+
+  const saving = mutation.isPending || isSubmitting;
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
+      {mutation.isError ? (
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+          {mutation.error?.message ?? "Failed to save changes. Please try again."}
+        </div>
+      ) : null}
+      {mutation.isSuccess ? (
+        <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-700">
+          Changes saved.
+        </div>
+      ) : null}
+
       <div className="flex flex-col gap-6 md:flex-row">
-        {product.featuredImage?.url ? (
-          <img
-            src={product.featuredImage.url}
-            alt={product.title}
-            className="h-40 w-40 shrink-0 rounded-lg object-cover ring-1 ring-slate-200"
-          />
-        ) : (
-          <div className="flex h-40 w-40 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-4xl font-bold text-slate-700">
-            {(product.title || "P").charAt(0).toUpperCase()}
-          </div>
-        )}
+        <div className="flex shrink-0 flex-col items-center gap-2">
+          {imagePreview ? (
+            <img
+              src={imagePreview}
+              alt={product.title}
+              className="h-40 w-40 rounded-lg object-cover ring-1 ring-slate-200"
+            />
+          ) : (
+            <div className="flex h-40 w-40 items-center justify-center rounded-lg bg-slate-100 text-4xl font-bold text-slate-700">
+              {(product.title || "P").charAt(0).toUpperCase()}
+            </div>
+          )}
+          <label className="cursor-pointer rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm transition hover:bg-slate-50">
+            {imageFile ? "Change image" : "Upload image"}
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              className="hidden"
+            />
+          </label>
+        </div>
         <dl className="flex flex-col gap-2 text-sm">
           <div className="flex gap-2">
             <dt className="font-medium text-slate-500">Handle</dt>
@@ -144,9 +194,10 @@ export default function ProductForm({ product }) {
       <div className="flex justify-end gap-3 border-t border-slate-200 pt-4">
         <button
           type="submit"
-          className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2"
+          disabled={saving}
+          className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          Save changes
+          {saving ? "Saving…" : "Save changes"}
         </button>
       </div>
     </form>
